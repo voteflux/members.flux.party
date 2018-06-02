@@ -1,7 +1,7 @@
 // all api calls should be written up as methods here (where the methods take the correct arguments)
 
 
-import {Either} from 'tsmonad';
+import {Maybe, Either} from 'tsmonad';
 
 
 interface UserV1Object {
@@ -14,6 +14,11 @@ interface UserV1Object {
     addr_suburb: string;
     addr_postcode: string | number;
     addr_street_no: string;
+}
+
+interface Auth {
+    apiToken: string;
+    s: string;
 }
 
 
@@ -92,10 +97,12 @@ const FluxApi = {
             },
 
             auth: {
-                getSavedAuth() {
+                loadAuth(): Maybe<Auth> {
                     const memberSecret = localStorage.getItem('s')
-                    const memberApiToken = localStorage.getItem('flux.member.apiToken')
-                    return {memberApiToken, memberSecret}
+                    const apiToken = localStorage.getItem('flux.member.apiToken')
+                    if (memberSecret && apiToken)
+                        return Maybe.just({apiToken, s: memberSecret})
+                    return Maybe.nothing();
                 },
 
                 saveApiToken(token: string) {

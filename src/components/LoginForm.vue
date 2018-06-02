@@ -3,24 +3,20 @@
         <h3>Login to Flux UI</h3>
         <div id="form-group">
 
-            <div v-show="showInProgress()">
-                <h3>Attempting to log you in...</h3>
-            </div>
-
-            <div v-show="showSentEmail()">
+            <div v-show="state == EMAIL_SENT">
                 <h3>An email has been sent to you. Please check your inbox.</h3>
             </div>
 
-            <div v-show="showMainLoginForm()">
+            <div v-show="state != EMAIL_SENT">
                 <label>
                     Email:
                     <input v-model.trim="user.email" placeholder="name@example.com" type="email" name="email"/>
                 </label>
 
-                <button v-show="showCheckEmailButton()" v-on:click="checkEmail()">Continue</button>
+                <button v-show="state == NEED_EMAIL" v-on:click="checkEmail()">Continue</button>
+                <Loading v-show="state == SENDING_EMAIL">Sending email...</Loading>
             </div>
 
-            <Loading v-show="showLoading()" :config="loading"></Loading>
         </div>
     </div>
 </template>
@@ -28,35 +24,33 @@
 <script>
     import Loading from "./Loading";
 
+    const cs = {
+        NEED_EMAIL: 1,
+        SENDING_EMAIL: 2,
+        EMAIL_SENT: 3,
+    }
+
     export default {
         name: "LoginForm",
         components: {Loading},
         data: () => ({
-            loading: Loading.init(),
             user: {
                 email: ""
             },
-            loginState: "needEmail"
+            state: cs.NEED_EMAIL,
+            ...cs
         }),
 
         methods: {
-            showCheckEmailButton() { return this.loginState == "needEmail" },
-            showInProgress() { return this.loginState == "inProgress" },
-            showLoading() { return this.loginState == "loading" },
-            showSentEmail() { return this.loginState == "emailSent" },
-            showMainLoginForm() { return this.showCheckEmailButton() || this.showLoading() },
-
             checkEmail() {
-                this.loginState = "loading"
-                this.loading = Loading.show("Checking Email...")
-
+                this.state = cs.SENDING_EMAIL
+                const _email = this.user.email
                 this.$flux.v1.sendUserDetails(this.user)
                     .then(r => {
-                        this.loading = Loading.hide();
                         r.caseOf({
                             left: e => {
-                                this.loginState = "needEmail"
-                                this.showErr(e)
+                                this.state = cs.NEED_EMAIL
+                                this.emailError = [this.showErr(e), _email]
                             },
                             right: (r) => {
                                 if (r.sent_email) {
@@ -70,26 +64,10 @@
                     })
             },
 
-            showErr(msg) {
-                // console.log("Showing error:", msg);
-                this.$notify({
-                    title: "Error",
-                    text: msg,
-                    type: 'error'
-                })
-            }
+
         },
 
         created() {
-            const {memberSecret, memberApiToken} = this.$flux.auth.getSavedAuth()
-
-            if (memberSecret || memberApiToken) {
-                // check we're logged in properly
-                this.loginState = "inProgress"
-            } else {
-                // we're not logged in
-                this.loginState = "needEmail"
-            }
         }
     }
 </script>

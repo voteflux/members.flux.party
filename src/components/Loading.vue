@@ -1,21 +1,12 @@
 <template>
-    <div v-show="config._show" class="loading">
-        {{ config._msg }}
+    <div class="loading">
+        <slot/>
     </div>
 </template>
 
 <script>
     export default {
         name: "Loading",
-        props: {
-            config: {
-                _msg: "",
-                _show: false
-            }
-        },
-        show: (_msg) => ({_msg, _show: true}),
-        hide: () => ({_msg: "", show: false}),
-        init: () => ({_msg: "", _show: false})
     }
 </script>
 
