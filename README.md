@@ -4,4 +4,9 @@ Static pages for members.flux.party that interact with both APIv1 and APIv2.
 
 Cloned from flux-api/static originally and modified to work from a separate domain.
 
-Currently no build tool is used so files are directly in _dist, but we can add a build tool later on.
+`npm run build` to build to `./dist`
+
+## UI V2
+
+The v2 of our UI is being worked on in `./src` and is written with vue.js
+
