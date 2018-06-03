@@ -3,6 +3,8 @@ import App from './App.vue'
 
 // eslint-disable-next-line
 require('normalize.css');
+// eslint-disable-next-line
+require('tachyons')
 
 Vue.config.productionTip = true
 Vue.prototype.$dev = Vue.config.productionTip
@@ -16,16 +18,20 @@ Vue.use(Notifications)
 import FluxApi from './lib/api';
 Vue.use(FluxApi);
 
+import ErrHandlers from './lib/errors'
+Vue.use(ErrHandlers)
+
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 
 import HelloWorld from './components/HelloWorld.vue'
-import LoginForm from './components/LoginForm.vue'
+import Dashboard from './components/Dashboard.vue'
 
 const routes = [
-    {path: '/', component: LoginForm},
-    {path: '/test', component: HelloWorld}
+    {path: '/', component: Dashboard},
+    {path: '/test', component: HelloWorld},
+    {path: '*', redirect: '/'}
 ]
 
 const router = new VueRouter({ routes })

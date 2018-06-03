@@ -1,5 +1,6 @@
 <template>
-    <div id="app">
+    <div id="app" class="w-100 w-80-m w-70-l center">
+        <notifications/>
         <Loading v-show="loginState == IS_LOGGING_IN">
             Checking login details...
         </Loading>
@@ -26,10 +27,6 @@
             IS_LOGGING_IN: 3,
         }
 
-    // @Component({
-    //     components: {
-    //     },
-    // })
     export default /*class App extends Vue*/ {
         components: { LoginForm, Loading },
         data: () => ({
@@ -39,7 +36,7 @@
         methods: {
             loadAuth() {
                 const loginFailed = () => this.loginState = cs.IS_NOT_LOGGED_IN
-                console.log(this.loginState)
+
                 this.$flux.auth.loadAuth()
                     .caseOf({
                         nothing: () => loginFailed(),
@@ -60,7 +57,6 @@
             }
         },
         created(){
-            console.log(this);
             this.loadAuth()
         }
     }

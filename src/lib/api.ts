@@ -100,9 +100,14 @@ const FluxApi = {
                 loadAuth(): Maybe<Auth> {
                     const memberSecret = localStorage.getItem('s')
                     const apiToken = localStorage.getItem('flux.member.apiToken')
-                    if (memberSecret && apiToken)
+                    if (memberSecret || apiToken)
                         return Maybe.just({apiToken, s: memberSecret})
                     return Maybe.nothing();
+                },
+
+                remove() {
+                    localStorage.removeItem('s')
+                    localStorage.removeItem('flux.member.apiToken')
                 },
 
                 saveApiToken(token: string) {
