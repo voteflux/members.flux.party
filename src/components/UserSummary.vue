@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-show="user && user.loading !== true">
+        <div v-if="user && user.loading !== true">
             <h3>Your Current Details:</h3>
 
             <Table2Cols :data="userSummaryData()"></Table2Cols>
@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <div v-show="user && user.loading === true">
+        <div v-if="user && user.loading === true">
             <h3>Loading your details...</h3>
         </div>
     </div>

@@ -6,6 +6,13 @@
             <UserSummary :user='user'></UserSummary>
         </UiSection>
 
+        <ui-section title="Member Tools">
+            <ul class="ul-spaced">
+                <li><a href="/member_details.html">Change your member details or preferences</a></li>
+                <li><a href="/anon_validation.html">Help validate other members</a></li>
+            </ul>
+        </ui-section>
+
     </div>
 </template>
 
@@ -24,4 +31,7 @@ export default Vue.extend({
 
 
 <style scoped>
+ul.ul-spaced li {
+    margin-top: 10px;
+}
 </style>
