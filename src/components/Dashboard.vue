@@ -6,6 +6,10 @@
             <UserSummary :user='user'></UserSummary>
         </UiSection>
 
+        <UiSection v-if="roles && roles.length > 0" title="Organiser Utilities">
+
+        </UiSection>
+
         <ui-section title="Member Tools">
             <ul class="ul-spaced">
                 <li><a href="/member_details.html">Change your member details or preferences</a></li>
@@ -25,7 +29,10 @@ import { UiSection } from "./common";
 export default Vue.extend({
     name: "Dashboard",
     components: { UserSummary, UiSection },
-    props: ["user"]
+    props: {
+        user: Object,
+        roles: Array,
+    }
 });
 </script>
 
