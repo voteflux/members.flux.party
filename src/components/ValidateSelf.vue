@@ -1,9 +1,5 @@
 <template>
     <UiSection title="Self Validation of Electoral Roll Details">
-        Sock state: {{ state }}
-
-        <Error v-show="this.err.socket.msg">{{ this.err.socket.msg }}</Error>
-
         <div v-show="state == UNINITIALIZED">
             <h4>Loading validation...</h4>
         </div>
@@ -14,8 +10,8 @@
 
         <div v-show="state == AWAITING_CAPTCHA">
             <h4>Please enter the CAPTCHA below</h4>
-            <img :src="sessionImg.src" class="db">
-            <input class="pa2 w-100 mt2" type="text" v-model="captchaAnswer" v-on:keyup.enter="submitCaptcha()" placeholder="Please enter the CAPTCHA" />
+            <img :src="captchaImg" style="min-height: 50px; min-width: 200px" class="db">
+            <input ref="captcha" class="pa2 w-100 mt2" type="text" v-model="captchaAnswer" v-on:keyup.enter="submitCaptcha()" placeholder="Please enter the CAPTCHA" />
         </div>
 
         <div v-show="state == SENT_CAPTCHA">
@@ -23,13 +19,36 @@
         </div>
 
         <div v-show="state == GOT_RESULT">
-            <span v-if="validationSuccess">Your details are valid 🙂</span>
-            <span v-else>Your details were not valid! The reason was: {{ validationReason }}</span>
+            <div v-if="validationSuccess">
+                <p>Your details are valid 🙂, thanks!</p>
+                <router-link :to="R.Dashboard">Back to Dashboard</router-link>
+            </div>
+            <span v-else>Your details were not valid! The reason was:
+                <Error>{{ validationReason }}</Error>
+
+                <div v-if="captchaStatus == false">
+                    <button class="db mv2 pa2" v-on:click="startAgain()">Try Again</button>
+                </div>
+
+                <div v-else>
+                    <router-link :to="R.Dashboard">Back to Dashboard</router-link>
+                </div>
+
+            </span>
         </div>
 
         <div v-show="state == SOCKET_CLOSED">
             Connection lost.
-            <button class="db mv2 pa2" >Reconnect</button>
+            <button class="db mv2 pa2" v-on:click="startAgain()">Reconnect</button>
+        </div>
+
+        <div v-show="state == ERROR">
+            <p>
+                Oh no! An error!
+            </p>
+            <Error v-show="err.socket.msg">{{ err.socket.msg }}</Error>
+            <button class="db mv2 pa2" v-on:click="startAgain()">Try Again?</button>
+            <router-link :to="R.Dashboard">Back to Dashboard</router-link>
         </div>
     </UiSection>
 </template>
@@ -39,7 +58,8 @@ import Vue from "vue";
 import { UiSection } from "./common";
 import { mkErrContainer } from "../lib/errors";
 import { Error } from "./common";
-import M from "../messages";
+import { M, MsgBus } from "../messages";
+import R from "../routes";
 
 enum Cs {
     UNINITIALIZED,
@@ -47,7 +67,8 @@ enum Cs {
     AWAITING_CAPTCHA,
     SENT_CAPTCHA,
     GOT_RESULT,
-    SOCKET_CLOSED
+    SOCKET_CLOSED,
+    ERROR
 }
 
 export default Vue.extend({
@@ -62,7 +83,10 @@ export default Vue.extend({
         sessionImg: new Image(),
         session: null,
         captchaAnswer: "",
+        captchaImg: "",
+        captchaStatus: false,
         err: mkErrContainer(),
+        R,
         ...Cs
     }),
     methods: {
@@ -73,22 +97,24 @@ export default Vue.extend({
                     this.validationSuccess = msg.success;
                     this.captchaStatus = !msg["captcha_incorrect"];
                     this.validationReason = msg.validationReason;
+                    this.captchaAnswer = "";
+                    MsgBus.$emit(M.REFRESH_USER);
                 },
                 deliver_session: ({ session }) => {
                     this.session = session;
                     this.state = Cs.AWAITING_CAPTCHA;
-                    // focus captcha input
+                    this.$refs.captcha.focus();
+                    this.captchaImg = this.$flux.v1.captchaImgUrl(session);
                     this.sessionImg = new Image();
-                    this.sessionImg.src = this.$flux.v1.captchaImgUrl(session);
+                    this.sessionImg.src = this.captchaImg;
                 }
             };
         },
         setupSocket() {
-            this.socket = this.socket || this.$flux.v1.validationWebsocket();
-            if (this.socket.readyState > 1) {
-                // corresponds to CLOSING or CLOSED
-                this.socket = this.$flux.v1.validationWebsocket();
+            if (this.socket && this.socket.readyState <= 1) {
+                return;
             }
+            this.socket = this.$flux.v1.validationWebsocket();
 
             this.socket.onopen = () => {
                 this.sendInit();
@@ -101,7 +127,8 @@ export default Vue.extend({
             this.socket.onmessage = this.onSocketMessage;
 
             this.socket.onerror = e => {
-                this.err.socket = this.$err(e, null);
+                this.err.socket = this.$err(e, e);
+                this.state = Cs.ERROR;
             };
         },
         sendJson(toSend) {
@@ -123,6 +150,7 @@ export default Vue.extend({
         },
         onSocketError(msg) {
             this.err.socket = this.$err(msg.msg, msg);
+            this.state = Cs.ERROR;
         },
         submitCaptcha() {
             this.sendJson({
@@ -131,6 +159,11 @@ export default Vue.extend({
                 session: this.session
             });
             this.state = Cs.SENT_CAPTCHA;
+        },
+        startAgain() {
+            this.state = Cs.UNINITIALIZED;
+            this.setupSocket();
+            this.sendInit();
         }
     },
     created() {

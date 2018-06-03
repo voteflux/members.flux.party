@@ -25,13 +25,14 @@ import Loading from "./components/Loading.vue";
 import MenuBar from "./components/MenuBar.vue";
 import VueRouter from "vue-router";
 import { debug } from "util";
+import { M, MsgBus } from "./messages";
 
 // constants - for everything w/in this components scope
 enum Cs {
     // Login Consts
     IS_LOGGED_IN,
     IS_NOT_LOGGED_IN,
-    IS_LOGGING_IN
+    IS_LOGGING_IN,
 }
 
 export default /*class App extends Vue*/ {
@@ -43,35 +44,44 @@ export default /*class App extends Vue*/ {
         ...Cs
     }),
     methods: {
+        loginFailed() {
+            this.loginState = Cs.IS_NOT_LOGGED_IN;
+        },
         loadAuth() {
-            const loginFailed = () => (this.loginState = Cs.IS_NOT_LOGGED_IN);
-
             this.$flux.auth.loadAuth().caseOf({
-                nothing: () => loginFailed(),
-                just: auth =>
-                    this.$flux.v1.getUserDetails(auth).then(r =>
-                        r.caseOf({
-                            left: e => {
-                                loginFailed();
-                                if (e.err && e.err.status == 403) {
-                                    this.$flux.auth.remove();
-                                } else {
-                                    this.$unknownErr(e);
-                                }
-                            },
-                            right: user => {
-                                this.auth = auth;
-                                this.loginState = Cs.IS_LOGGED_IN;
-                                this.user = user;
-                            }
-                        })
-                    )
+                nothing: () => this.loginFailed(),
+                just: auth => {
+                    this.auth = auth;
+                    this.loadUser();
+                }
             });
         },
-        created() {}
+        loadUser() {
+            if (this.user) this.user.loading = true;
+            this.$flux.v1.getUserDetails(this.auth).then(r =>
+                r.caseOf({
+                    left: e => {
+                        this.loginFailed();
+                        if (e.err && e.err.status == 403) {
+                            this.$flux.auth.remove();
+                        } else {
+                            this.$unknownErr(e);
+                        }
+                    },
+                    right: user => {
+                        this.loginState = Cs.IS_LOGGED_IN;
+                        this.user = user;
+                    }
+                })
+            );
+        }
     },
     created() {
         this.loadAuth();
+
+        MsgBus.$on(M.REFRESH_USER, () => {
+            this.loadUser();
+        });
     }
 };
 </script>
