@@ -8,30 +8,30 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import Vue from "vue";
 export default Vue.extend({
-    name: 'error'
-})
+    name: "error"
+});
 </script>
 
 <style scoped>
-    .error {
-        /* color: #ffffff; */
-        color: white;
-        border: solid 0px;
-        border-color: #aa0000;
+.error {
+    /* color: #ffffff; */
+    color: white;
+    border: solid 0px;
+    border-color: #aa0000;
 
-        background-color: #d44;
-        border-left-width: 4px;
+    background-color: #d44;
+    border-left-width: 4px;
 
-        text-align: left;
-        font-size: 0.9rem;
-    }
+    text-align: left;
+    font-size: 0.9rem;
+}
 
-    .heading {
-        font-weight: 600;
-    }
+.heading {
+    font-weight: 600;
+}
 
-    .err-text {
-    }
+.err-text {
+}
 </style>
