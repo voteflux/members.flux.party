@@ -7,7 +7,7 @@
         </UiSection>
 
         <UiSection v-if="roles && roles.length > 0" title="Organiser Utilities">
-
+            <OrganiserUtils />
         </UiSection>
 
         <ui-section title="Member Tools">
@@ -24,11 +24,12 @@
 <script lang="ts">
 import Vue from "vue";
 import UserSummary from "./UserSummary.vue";
+import OrganiserUtils from "./OrganiserUtils.vue";
 import { UiSection } from "./common";
 
 export default Vue.extend({
     name: "Dashboard",
-    components: { UserSummary, UiSection },
+    components: { UserSummary, UiSection, OrganiserUtils },
     props: {
         user: Object,
         roles: Array,
