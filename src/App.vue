@@ -9,7 +9,7 @@
         </Loading>
 
         <div v-show="loginState == IS_LOGGED_IN">
-            <transition name="fade"><router-view :auth="auth" :user="user"/></transition>
+            <transition name="fade"><router-view :auth="auth" :user="user" :roles="['admin']"/></transition>
         </div>
 
         <div v-show="loginState == IS_NOT_LOGGED_IN">
