@@ -7,6 +7,26 @@ require("normalize.css");
 // eslint-disable-next-line
 require("tachyons");
 
+
+// add service worker if we can
+
+if('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(() => {
+                console.log("Registered service worker.")
+            })
+    })
+}
+
+if ('standalone' in navigator) {
+    // do stuff here when we're in a PWA
+    // note - we need to check if navigator.standalone is true
+}
+
+
+// vue init
+
 Vue.config.productionTip = true;
 Vue.prototype.$dev = Vue.config.productionTip;
 

@@ -90,6 +90,7 @@ export default {
         advStoreSecret() {
             this.$flux.auth.saveSecret(this.advSecret)
             this.$nextTick(() => MsgBus.$emit(M.REFRESH_USER))
+            // MsgBus.$emit(M.CHECK_AUTH)
         },
 
         shouldShowAdvanced() {
@@ -98,6 +99,10 @@ export default {
                 return true;
             }
             return false;
+        },
+
+        debugInfo() {
+            return JSON.stringify({...location, unkErrors: this.$getUnkErrs() }, null, 4)
         }
     }
 };

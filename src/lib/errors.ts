@@ -4,6 +4,8 @@ interface SError<T> {
     wipe: () => void;
 }
 
+const unknownErrors = [];
+
 export const emptyErr = <T>(): SError<T> => {
     const _err = { msg: "", sample: null, wipe: () => {} };
     return new Proxy(
@@ -20,6 +22,7 @@ export const emptyErr = <T>(): SError<T> => {
         }
     )
 }
+
 
 export const mkErrFrom = <T>(msg, sample: T): SError<T> => {
     const e: SError<T> = emptyErr();
@@ -53,10 +56,14 @@ const FluxErrHandler = {
         };
 
         Vue.prototype.$unknownErr = (e: any) => {
-            // debugger;
             console.log("Unknown error", e)
-            return Vue.prototype.$err("Unknown error", e)
+            unknownErrors.push(e);
+            return Vue.prototype.$err("Unknown error: " + JSON.stringify(e).slice(0,100), e)
         };
+
+        Vue.prototype.$getUnkErrs = () => {
+            return unknownErrors;
+        }
     }
 };
 

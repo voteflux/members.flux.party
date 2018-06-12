@@ -98,6 +98,8 @@ export default /*class App extends Vue*/ {
 
         this.$on(M.LOGOUT, this.logout)
         MsgBus.$on(M.LOGOUT, this.logout)
+
+        MsgBus.$on(M.CHECK_AUTH, this.loadAuth)
     }
 };
 </script>
