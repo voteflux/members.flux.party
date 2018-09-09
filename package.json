@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --name a1 && cp -a ./static/* ./dist/",
+    "build": "mkdir -p dist && rm -rf ./dist/* # vue-cli-service build --name a1 && cp -a ./static/* ./dist/",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
